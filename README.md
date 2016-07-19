@@ -17,6 +17,7 @@ CentOS release 6.7 (Final)
 * app.py
 * start.sh
 * sudo_start.sh
+* sudo_bg_start.sh
 
 ```
 ==> app.py <==
@@ -35,6 +36,11 @@ time.sleep(3600)
 #!/bin/bash
 
 sudo ./app.py
+
+==> sudo_bg_start.sh <==
+#!/bin/bash
+
+sudo ./app.py &
 ```
 
 ## 实验一
@@ -125,6 +131,32 @@ select(0, NULL, NULL, NULL, {3464, 209435}
      │      ├─5*[sshd───bash]
      │      └─sshd───bash───pstree
 ```
+
+## 实验三
+在脚本文件里执行sudo指令，并且是后台执行
+
+### 启动程序
+脚本运行之后，直接返回到终端，说明已经后台执行
+
+```
+./sudo_bg_start.sh
+```
+
+### 查看进程父子关系
+可以看到，sudo的父进程已经是init进程，说明sudo的父进程(shell)已经退出，init收留孤儿进程(sudo)
+
+```
+     ├─sshd─┬─4*[sshd───bash]
+     │      ├─sshd───sshd───bash───2*[vim]
+     │      ├─sshd───bash───pstree
+     │      ├─sshd───bash───man───sh───sh───less
+     │      └─sshd───bash───vi
+     ├─sudo───app.py
+$ ps -ef|grep sudo
+root     11207     1  0 17:31 pts/1    00:00:00 sudo ./app.py
+root     15687 17926  0 17:34 pts/5    00:00:00 grep sudo
+```
+
 
 ## 结论
 sudo命令在不同的启动方式下，虽然进程的父子关系的表现不一样，但是这并不影响进程正确运行。
